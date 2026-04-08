@@ -2,7 +2,7 @@ const CACHE_NAME = 'kohls-v1';
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(['./', './index.html', './manifest.json', './icon.png']);
+      return cache.addAll(['./', './index.html', './manifest.json']);
     })
   );
 });
