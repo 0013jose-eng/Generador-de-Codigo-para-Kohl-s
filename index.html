@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de codigos para Kohl's - Jose Baltodano</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#128C7E">
+    
+    <style>
+        /* Fondo Negro y Estilo Dark */
+        body { font-family: sans-serif; padding: 15px; background-color: #000000; color: #ffffff; margin: 0; min-height: 100vh; }
+        .card { max-width: 500px; margin: 10px auto; background: #1c1c1c; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(255,255,255,0.05); border: 1px solid #333; }
+        h2 { color: #25D366; text-align: center; margin-bottom: 20px; }
+        textarea { width: 100%; height: 120px; border: 1px solid #444; border-radius: 8px; padding: 10px; box-sizing: border-box; font-size: 16px; outline: none; background: #2d2d2d; color: #fff; }
+        textarea:focus { border-color: #25D366; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-extract { background-color: #128C7E; color: white; }
+        .btn-extract:active { background-color: #075e54; }
+        .btn-copy { background-color: #25D366; color: white; display: none; }
+        #output { background: #2d2d2d; padding: 15px; border-radius: 8px; border: 1px dashed #555; margin-top: 10px; display: none; word-wrap: break-word; font-family: monospace; line-height: 1.5; color: #fff; }
+        .footer-widgets { position: fixed; bottom: 10px; width: calc(100% - 30px); display: flex; justify-content: space-between; align-items: flex-end; pointer-events: none; }
+        .widget-box { pointer-events: auto; }
+        #cal-box { background: #1c1c1c; padding: 10px; border-radius: 10px; border: 1px solid #333; font-size: 12px; }
+        .cal-controls { display: flex; gap: 5px; margin-bottom: 8px; }
+        select { border: 1px solid #444; border-radius: 4px; color: #25D366; font-weight: bold; font-size: 12px; padding: 2px; background: #2d2d2d; outline: none; }
+        table { border-collapse: collapse; margin: auto; }
+        td { text-align: center; padding: 3px 5px; width: 22px; color: #ccc; }
+        th { color: #888; font-weight: normal; font-size: 11px; }
+        .today { background: #ff5722; color: white; border-radius: 50%; font-weight: bold; box-shadow: 0 0 8px rgba(255,87,34,0.8); }
+        #reloj-container { text-align: right; }
+        #reloj { background: #128C7E; color: white; padding: 10px 15px; border-radius: 20px; font-family: monospace; font-size: 18px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.5); margin-bottom: 5px; display: inline-block; }
+        .firma { font-size: 13px; color: #25D366; font-weight: bold; font-style: italic; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Generador de codigos para Kohl's</h2>
+    <textarea id="txtIn" placeholder="Pega los codigos aqui..."></textarea>
+    <button class="btn-extract" onclick="doProcess()">EXTRAER ULTIMOS 8</button>
+    <div id="resCount" style="text-align:center; margin-top:5px; color:#25D366; font-weight:bold;"></div>
+    <div id="output"></div>
+    <button id="btnCopy" class="btn-copy" onclick="doCopy()">COPIAR PARA WHATSAPP</button>
+</div>
+
+<div class="footer-widgets">
+    <div id="cal-box" class="widget-box">
+        <div class="cal-controls">
+            <select id="selMonth" onchange="makeCal()"></select>
+            <select id="selYear" onchange="makeCal()"></select>
+        </div>
+        <table id="calTable"></table>
+    </div>
+
+    <div id="reloj-container" class="widget-box">
+        <div id="reloj">00:00:00</div>
+        <div class="firma">By Jose Baltodano</div>
+    </div>
+</div>
+
+<script>
+    // --- TU L?GICA ORIGINAL ---
+    const selMonth = document.getElementById('selMonth');
+    const selYear = document.getElementById('selYear');
+    const mesesNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    
+    function initSelectors() {
+        const d = new Date();
+        mesesNames.forEach((m, i) => {
+            let opt = new Option(m, i);
+            if(i === d.getMonth()) opt.selected = true;
+            selMonth.add(opt);
+        });
+        for(let a = 1900; a <= 2050; a++) {
+            let opt = new Option(a, a);
+            if(a === d.getFullYear()) opt.selected = true;
+            selYear.add(opt);
+        }
+    }
+
+    function tick() {
+        var d = new Date();
+        document.getElementById('reloj').innerHTML = d.toLocaleTimeString();
+    }
+    setInterval(tick, 1000);
+    tick();
+
+    function makeCal() {
+        var mes = parseInt(selMonth.value);
+        var anio = parseInt(selYear.value);
+        var hoyD = new Date();
+        var esHoy = (hoyD.getMonth() === mes && hoyD.getFullYear() === anio);
+        var table = "<tr><th>D</th><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th></tr>";
+        var firstDay = new Date(anio, mes, 1).getDay();
+        var totalDays = new Date(anio, mes + 1, 0).getDate();
+        var day = 1;
+        for (var i = 0; i < 6; i++) {
+            table += "<tr>";
+            for (var j = 0; j < 7; j++) {
+                if (i === 0 && j < firstDay) {
+                    table += "<td></td>";
+                } else if (day > totalDays) {
+                    table += "<td></td>";
+                } else {
+                    var cls = (esHoy && day === hoyD.getDate()) ? 'class="today"' : '';
+                    table += "<td " + cls + ">" + day + "</td>";
+                    day++;
+                }
+            }
+            table += "</tr>";
+            if (day > totalDays) break;
+        }
+        document.getElementById('calTable').innerHTML = table;
+    }
+
+    function doProcess() {
+        var val = document.getElementById('txtIn').value.trim();
+        if (!val) return;
+        var items = val.split(/[\s,]+/);
+        var res = [];
+        for (var i = 0; i < items.length; i++) {
+            var s = items[i].trim();
+            if (s.length >= 8) {
+                res.push(s.substring(s.length - 8));
+            }
+        }
+        if (res.length > 0) {
+            var out = document.getElementById('output');
+            out.innerHTML = res.join(" ");
+            out.style.display = "block";
+            document.getElementById('btnCopy').style.display = "block";
+            document.getElementById('resCount').innerHTML = "Total: " + res.length;
+        }
+    }
+
+    function doCopy() {
+        var t = document.getElementById('output').innerText;
+        navigator.clipboard.writeText(t).then(() => {
+            alert("Copiado con exito!");
+            document.getElementById('txtIn').value = "";
+            document.getElementById('output').style.display = "none";
+            document.getElementById('btnCopy').style.display = "none";
+            document.getElementById('resCount').innerHTML = "";
+        });
+    }
+
+    initSelectors();
+    makeCal();
+
+    // --- REGISTRO DE SERVICE WORKER (PARA LA APP) ---
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+</script>
+</body>
+</html>
